@@ -34,6 +34,7 @@ contract FlightSuretyApp {
     }
     mapping(bytes32 => Flight) private flights;
 
+    FlightSuretyData flightSuretyData;
  
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -49,8 +50,9 @@ contract FlightSuretyApp {
     */
     modifier requireIsOperational() 
     {
+
          // Modify to call data contract's status
-        require(true, "Contract is currently not operational");  
+        require(isOperational(), "Contract is currently not operational");  
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
@@ -73,10 +75,12 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
+                                    address dataContract
                                 ) 
                                 public 
     {
         contractOwner = msg.sender;
+        flightSuretyData = FlightSuretyData(dataContract);
     }
 
     /********************************************************************************************/
@@ -84,11 +88,10 @@ contract FlightSuretyApp {
     /********************************************************************************************/
 
     function isOperational() 
-                            public 
-                            pure 
+                            public  
                             returns(bool) 
     {
-        return true;  // Modify to call data contract's status
+        return flightSuretyData.isOperational();  // Modify to call data contract's status
     }
 
     /********************************************************************************************/
@@ -161,7 +164,6 @@ contract FlightSuretyApp {
 
         emit OracleRequest(index, airline, flight, timestamp);
     } 
-
 
 // region ORACLE MANAGEMENT
 
@@ -335,3 +337,8 @@ contract FlightSuretyApp {
 // endregion
 
 }   
+
+// Region Data interface.
+contract FlightSuretyData {
+    function isOperational() external returns(bool);
+}
