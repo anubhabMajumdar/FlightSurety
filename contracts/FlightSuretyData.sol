@@ -12,6 +12,7 @@ contract FlightSuretyData {
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCallers; 
+    mapping(address => bool) private airlines;
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -23,10 +24,12 @@ contract FlightSuretyData {
     */
     constructor
                                 (
+                                    address firstAirline
                                 ) 
                                 public 
     {
         contractOwner = msg.sender;
+        airlines[firstAirline] = true;
     }
 
     /********************************************************************************************/
@@ -104,13 +107,18 @@ contract FlightSuretyData {
     *
     */   
     function registerAirline
-                            (   
+                            (
                             )
                             external
-                            pure
+                            requireIsOperational
     {
+        // require(authorizedCallers[msg.sender], "Contract not allowed to perform this op.");
+        
     }
 
+    function isAirline(address airline) external returns(bool) {
+        return airlines[airline];
+    }
 
    /**
     * @dev Buy insurance for a flight
