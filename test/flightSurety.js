@@ -149,6 +149,57 @@ contract('Flight Surety Tests', async (accounts) => {
   
   });
 
+  it('(airline) fifth regeistration should fail.', async () => {
+    
+    // ARRANGE
+    await config.flightSuretyData.setOperatingStatus(true);
+    
+    let count1 = await config.flightSuretyData.returnAirlinesCount.call(); 
+    assert(count1, 4, "Only one airline should be registered.")
+
+    let fifthAirline = accounts[5];
+    
+    try {
+        await config.flightSuretyApp.registerAirline(fifthAirline, { from: config.firstAirline }); 
+    }
+    catch(e) {
+        // console.log(e);
+    }
+    
+    // ASSERT
+    let result = await config.flightSuretyData.isAirline.call(fifthAirline); 
+    assert(result, false, "Second airline should be registered.")
+
+    let count2 = await config.flightSuretyData.returnAirlinesCount.call(); 
+    assert(count2, 4, "Two airlines should be registered.")
+  });
+
+  it('(airline) fifth regeistration should succeed.', async () => {
+    
+    // ARRANGE
+    await config.flightSuretyData.setOperatingStatus(true);
+    
+    let count1 = await config.flightSuretyData.returnAirlinesCount.call(); 
+    assert(count1, 4, "Only one airline should be registered.")
+
+    let secondAirline = accounts[2];
+    let fifthAirline = accounts[5];
+    
+    try {
+        await config.flightSuretyApp.registerAirline(fifthAirline, { from: secondAirline }); 
+    }
+    catch(e) {
+        // console.log(e);
+    }
+    
+    // ASSERT
+    let result = await config.flightSuretyData.isAirline.call(fifthAirline); 
+    assert(result, true, "Second airline should be registered.")
+
+    let count2 = await config.flightSuretyData.returnAirlinesCount.call(); 
+    assert(count2, 5, "Two airlines should be registered.")
+  });
+
 //   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
 //     // // ARRANGE
