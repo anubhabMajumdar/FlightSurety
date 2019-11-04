@@ -12,7 +12,13 @@ contract FlightSuretyData {
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCallers; 
-    mapping(address => bool) private airlines;
+    
+    struct Airlines {
+        int airlineCount;
+        mapping(address => int) airlineList;
+    }
+    Airlines private airlines;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -29,7 +35,9 @@ contract FlightSuretyData {
                                 public 
     {
         contractOwner = msg.sender;
-        airlines[firstAirline] = true;
+
+        airlines = Airlines(1);
+        airlines.airlineList[firstAirline] = 1;
     }
 
     /********************************************************************************************/
@@ -108,16 +116,26 @@ contract FlightSuretyData {
     */   
     function registerAirline
                             (
+                                address newAirline,
+                                address oldAirline
                             )
-                            external
+                            public
                             requireIsOperational
+                            returns(bool)
     {
-        // require(authorizedCallers[msg.sender], "Contract not allowed to perform this op.");
-        
+        require(isAirline(oldAirline), "New airline can only be registered by a registered airline.");
+        require(!isAirline(newAirline), "New airline already registered.");
+        airlines.airlineList[newAirline] = 1;
+        airlines.airlineCount++;
+        return true;
     }
 
-    function isAirline(address airline) external returns(bool) {
-        return airlines[airline];
+    function isAirline(address airline) public view returns(bool) {
+        return airlines.airlineList[airline] == 1;
+    }
+
+    function returnAirlinesCount() public view returns(int) {
+        return airlines.airlineCount;
     }
 
    /**

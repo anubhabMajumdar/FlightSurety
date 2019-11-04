@@ -100,31 +100,68 @@ contract('Flight Surety Tests', async (accounts) => {
   it('(airline) only existing airline may register a new airline until there are at least four airlines registered.', async () => {
     
     // ARRANGE
-    let result = await config.flightSuretyData.isAirline.call(config.firstAirline); 
-
-    // ASSERT
-    assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
-
-  });
-
-  it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+    await config.flightSuretyData.setOperatingStatus(true);
     
-    // // ARRANGE
-    // let newAirline = accounts[2];
+    let count1 = await config.flightSuretyData.returnAirlinesCount.call(); 
+    assert(count1, 1, "Only one airline should be registered.")
 
-    // // ACT
-    // try {
-    //     await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
-    // }
-    // catch(e) {
+    let secondAirline = accounts[2];
+    try {
+        await config.flightSuretyApp.registerAirline(secondAirline, { from: config.firstAirline }); 
+    }
+    catch(e) {
+        console.log(e);
+    }
+    
+    // ASSERT
+    let result = await config.flightSuretyData.isAirline.call(secondAirline); 
+    // console.log(result);
+    assert(result, true, "Second airline should be registered.")
 
-    // }
-    // let result = await config.flightSuretyData.isAirline.call(newAirline); 
-
-    // // ASSERT
-    // assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
-
+    let count2 = await config.flightSuretyData.returnAirlinesCount.call(); 
+    // console.log(count2.toNumber());
+    assert(count1, 2, "Two airlines should be registered.")
   });
+
+//   it('(airline) register airline third and fourth with the seond registered airline.', async () => {
+    
+//     // ARRANGE
+//     let secondAirline = accounts[2];
+//     let thirdAirline = accounts[3];
+//     let fourthAirline = accounts[4];
+//     let flag = true;
+//     try {
+//         await config.flightSuretyData.registerAirline.call(thirdAirline, { from: secondAirline }); 
+//         await config.flightSuretyData.registerAirline.call(fourthAirline, { from: secondAirline }); 
+//     }
+//     catch(e) {
+//         console.log(e);
+//         flag = false;
+//     }
+    
+//     // ASSERT
+//     assert.equal(flag, true, "Airlines third and fourth should have been registered.");
+
+//   });
+
+//   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+    
+//     // // ARRANGE
+//     // let newAirline = accounts[2];
+
+//     // // ACT
+//     // try {
+//     //     await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+//     // }
+//     // catch(e) {
+
+//     // }
+//     // let result = await config.flightSuretyData.isAirline.call(newAirline); 
+
+//     // // ASSERT
+//     // assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+
+//   });
  
 
 });

@@ -26,6 +26,15 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
 
+    struct Airline {
+        bool exists;
+        address airlineAddress;
+        int votes;
+        bool registered;
+        mapping(address => int) voters;
+    }
+    mapping(address => Airline) private airlines;
+    
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
@@ -104,13 +113,26 @@ contract FlightSuretyApp {
     *
     */   
     function registerAirline
-                            (   
+                            (  
+                                address newAirline 
                             )
-                            external
-                            pure
-                            returns(bool success, uint256 votes)
+                            public
+                            returns(bool success, int votes)
     {
-        return (success, 0);
+        if (airlines[newAirline].exists) {
+            require(airlines[newAirline].voters[msg.sender] != 1, "This user has already registered this airline once.");
+            airlines[newAirline].voters[msg.sender] = 1;
+            airlines[newAirline].votes++;
+        } else {
+            airlines[newAirline] = Airline(true, newAirline, 1, false);
+            airlines[newAirline].voters[msg.sender] = 1;
+        }
+
+        int airlinesCount = flightSuretyData.returnAirlinesCount();
+        if ((airlinesCount <= 4) || (airlines[newAirline].votes >= airlinesCount/2)) {
+            airlines[newAirline].registered = flightSuretyData.registerAirline(newAirline, msg.sender);
+        }
+        return (airlines[newAirline].registered, airlines[newAirline].votes);
     }
 
 
@@ -341,4 +363,6 @@ contract FlightSuretyApp {
 // Region Data interface.
 contract FlightSuretyData {
     function isOperational() external returns(bool);
+    function returnAirlinesCount() external view returns(int);
+    function registerAirline(address newAirline, address oldAddress) external returns(bool);
 }
