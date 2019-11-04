@@ -115,34 +115,39 @@ contract('Flight Surety Tests', async (accounts) => {
     
     // ASSERT
     let result = await config.flightSuretyData.isAirline.call(secondAirline); 
-    // console.log(result);
     assert(result, true, "Second airline should be registered.")
 
     let count2 = await config.flightSuretyData.returnAirlinesCount.call(); 
-    // console.log(count2.toNumber());
     assert(count1, 2, "Two airlines should be registered.")
   });
 
-//   it('(airline) register airline third and fourth with the seond registered airline.', async () => {
+  it('(airline) register airline third and fourth with the seond registered airline.', async () => {
     
-//     // ARRANGE
-//     let secondAirline = accounts[2];
-//     let thirdAirline = accounts[3];
-//     let fourthAirline = accounts[4];
-//     let flag = true;
-//     try {
-//         await config.flightSuretyData.registerAirline.call(thirdAirline, { from: secondAirline }); 
-//         await config.flightSuretyData.registerAirline.call(fourthAirline, { from: secondAirline }); 
-//     }
-//     catch(e) {
-//         console.log(e);
-//         flag = false;
-//     }
+    // ARRANGE
+    await config.flightSuretyData.setOperatingStatus(true);
     
-//     // ASSERT
-//     assert.equal(flag, true, "Airlines third and fourth should have been registered.");
+    let secondAirline = accounts[2];
+    let thirdAirline = accounts[3];
+    let fourthAirline = accounts[4];
+    try {
+        await config.flightSuretyApp.registerAirline(thirdAirline, { from: secondAirline }); 
+        await config.flightSuretyApp.registerAirline(fourthAirline, { from: secondAirline }); 
+    }
+    catch(e) {
+        console.log(e);
+    }
+    
+    // ASSERT
+    let result1 = await config.flightSuretyData.isAirline.call(thirdAirline); 
+    assert(result1, true, "Third airline should be registered.")
 
-//   });
+    let result2 = await config.flightSuretyData.isAirline.call(fourthAirline); 
+    assert(result2, true, "Fourth airline should be registered.")
+
+    let count = await config.flightSuretyData.returnAirlinesCount.call(); 
+    assert(count, 4, "Four airlines should be registered.")
+  
+  });
 
 //   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
