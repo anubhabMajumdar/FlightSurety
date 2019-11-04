@@ -135,6 +135,9 @@ contract FlightSuretyApp {
         return (airlines[newAirline].registered, airlines[newAirline].votes);
     }
 
+    function fundAirline() public payable {
+        return flightSuretyData.fundAirline(msg.sender, msg.value);
+    }
 
    /**
     * @dev Register a future flight for insuring.
@@ -365,4 +368,5 @@ contract FlightSuretyData {
     function isOperational() external returns(bool);
     function returnAirlinesCount() external view returns(int);
     function registerAirline(address newAirline, address oldAddress) external returns(bool);
+    function fundAirline(address airline, uint256 amount) public payable;
 }

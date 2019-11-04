@@ -16,6 +16,7 @@ contract FlightSuretyData {
     struct Airlines {
         int airlineCount;
         mapping(address => int) airlineList;
+        mapping(address => uint256) airlineMoney;
     }
     Airlines private airlines;
 
@@ -38,6 +39,7 @@ contract FlightSuretyData {
 
         airlines = Airlines(1);
         airlines.airlineList[firstAirline] = 1;
+        airlines.airlineMoney[firstAirline] = 10;
     }
 
     /********************************************************************************************/
@@ -130,8 +132,12 @@ contract FlightSuretyData {
         return true;
     }
 
+    function fundAirline(address airline, uint256 amount) public payable {
+        airlines.airlineMoney[airline] = amount;
+    }
+
     function isAirline(address airline) public view returns(bool) {
-        return airlines.airlineList[airline] == 1;
+        return ((airlines.airlineList[airline] == 1) && (airlines.airlineMoney[airline] >= 10));
     }
 
     function returnAirlinesCount() public view returns(int) {
