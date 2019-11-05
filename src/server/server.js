@@ -13,9 +13,9 @@ let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddre
 
 flightSuretyApp.events.OracleRequest({
     fromBlock: 0
-  }, function (error, event) {
+  }, async function (error, event) {
     if (error) console.log(error)
-    console.log(event)
+    await handleRequest(flightSuretyApp, event.returnValues.airline, event.returnValues.flight, event.returnValues.timestamp);
 });
 
 const app = express();
@@ -26,6 +26,22 @@ app.get('/api', (req, res) => {
 })
 
 export default app;
+
+async function handleRequest(flightSuretyApp, airline, flight, timestamp) {
+  const accounts = await web3.eth.getAccounts();
+  for(let a=1; a<=20; a++) {
+    let oracleIndexes = await flightSuretyApp.methods.getMyIndexes().call({from: accounts[a], gas: 99999999});
+    for(let idx=0;idx<3;idx++) {
+      try {
+        // Submit a response...it will only be accepted if there is an Index match
+        await flightSuretyApp.methods.submitOracleResponse(oracleIndexes[idx], airline, flight, timestamp, 10).send({ from: accounts[a], gas: 99999999 });
+      }
+      catch(e) {
+        // Enable this when debugging
+      }
+    }
+  }
+}
 
 (async() => {
   let config = Config['localhost'];
