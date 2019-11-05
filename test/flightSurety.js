@@ -269,4 +269,23 @@ contract('Flight Surety Tests', async (accounts) => {
     assert(x>0, "Balance should be positive.");
   });
 
+  it('(Passengers) can register flight', async () => {
+    let user1 = accounts[7];
+    
+    let airline = config.firstAirline;
+    let flightName = "Udacity";
+    let timestamp = 100;
+    
+    try {
+        await config.flightSuretyApp.registerFlight(airline, flightName, timestamp);
+    } 
+    catch(e) {
+        console.log(e);
+    }
+
+    let result = await config.flightSuretyApp.isFlightRegistered.call(airline, flightName, timestamp);
+    assert.equal(result, true, "Flight should be registered.")
+  });
+
+
 });

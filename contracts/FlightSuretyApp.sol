@@ -155,6 +155,19 @@ contract FlightSuretyApp {
         bytes32 key = keccak256(abi.encodePacked(airline, flight, timestamp));
         flights[key] = Flight(true, flight, STATUS_CODE_UNKNOWN, timestamp, airline);
     }
+
+    function isFlightRegistered
+                                (
+                                    address airline,
+                                    string flight,
+                                    uint256 timestamp
+                                )
+                                public 
+                                returns(bool)
+    {
+        bytes32 key = keccak256(abi.encodePacked(airline, flight, timestamp));
+        return flights[key].isRegistered; 
+    } 
     
    /**
     * @dev Called after oracle has updated flight status
@@ -169,7 +182,9 @@ contract FlightSuretyApp {
                                 )
                                 internal
     {
-        
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            flightSuretyData.creditInsurees(airline, flight, timestamp);
+        }
     }
 
 
@@ -373,4 +388,5 @@ contract FlightSuretyData {
     function returnAirlinesCount() external view returns(int);
     function registerAirline(address newAirline, address oldAddress) external returns(bool);
     function fundAirline(address airline, uint256 amount) public payable;
+    function creditInsurees(address airline, string flight, uint256 timestamp) external;
 }
