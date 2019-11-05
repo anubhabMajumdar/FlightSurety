@@ -20,6 +20,16 @@ contract FlightSuretyData {
     }
     Airlines private airlines;
 
+    struct Insuree {
+        address insuree;
+        uint256 amount;
+    }
+    mapping(bytes32 => Insuree[]) insurees;
+
+    mapping(address => uint256) payouts;
+
+    uint256 totalFund;
+ 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -40,6 +50,8 @@ contract FlightSuretyData {
         airlines = Airlines(1);
         airlines.airlineList[firstAirline] = 1;
         airlines.airlineMoney[firstAirline] = 10;
+
+        totalFund = 10;
     }
 
     /********************************************************************************************/
@@ -133,7 +145,8 @@ contract FlightSuretyData {
     }
 
     function fundAirline(address airline, uint256 amount) public payable {
-        airlines.airlineMoney[airline] = amount;
+        totalFund = totalFund.add(amount);
+        airlines.airlineMoney[airline] = airlines.airlineMoney[airline].add(amount);
     }
 
     function isAirline(address airline) public view returns(bool) {
@@ -149,12 +162,17 @@ contract FlightSuretyData {
     *
     */   
     function buy
-                            (                             
+                            (      
+                                address airline,
+                                string flight,
+                                uint256 timestamp
                             )
                             external
                             payable
     {
-
+        bytes32 flightKey = keccak256(abi.encodePacked(airline, flight, timestamp));
+        require(msg.value <= 1, "Insurance amount cannot surpass 1 eth.");
+        insurees[flightKey].push(Insuree(msg.sender, msg.value));
     }
 
     /**
@@ -162,10 +180,24 @@ contract FlightSuretyData {
     */
     function creditInsurees
                                 (
+                                    address airline,
+                                    string flight,
+                                    uint256 timestamp
                                 )
                                 external
-                                pure
     {
+        bytes32 flightKey = keccak256(abi.encodePacked(airline, flight, timestamp));
+        uint256 payoutAmt = 0;
+
+        for (uint256 i = 0; i < insurees[flightKey].length; i++) {
+            payoutAmt = payoutAmt.add(insurees[flightKey][i].amount);
+            payouts[insurees[flightKey][i].insuree] = payouts[insurees[flightKey][i].insuree].add((3 * insurees[flightKey][i].amount)/2);
+        }
+        totalFund = totalFund.sub((3 * payoutAmt)/2);
+        
+        delete insurees[flightKey];
+        // Insuree[] storage emptyList;
+        // insurees[flightKey] = emptyList;
     }
     
 
@@ -177,8 +209,10 @@ contract FlightSuretyData {
                             (
                             )
                             external
-                            pure
     {
+        uint256 amt = payouts[msg.sender];
+        payouts[msg.sender] = payouts[msg.sender].sub(amt);
+        msg.sender.transfer(amt);
     }
 
    /**

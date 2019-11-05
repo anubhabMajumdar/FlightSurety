@@ -224,4 +224,49 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
  
+  it('(Passengers) cannot buy insurance for more than 1 ether', async () => {
+    let user1 = accounts[7];
+    
+    let airline = config.firstAirline;
+    let flightName = "Hello World";
+    let timestamp = 100;
+    let flag = true;
+
+    try {
+        await config.flightSuretyData.buy(airline, flightName, timestamp, {from: user1, value: 2, gasPrice: 0});
+    } 
+    catch(e) {
+        flag = false;
+    }
+
+    assert.equal(flag, false, "Insurance buy should fail.")
+  });
+
+  it('(Passengers) check payout', async () => {
+    let user1 = accounts[7];
+    
+    let airline = config.firstAirline;
+    let flightName = "Hello World";
+    let timestamp = 100;
+
+    let insuranceAmount = web3.utils.toWei("1", "ether");
+    
+    let balanceOfUser1BeforeTransaction = await web3.eth.getBalance(user1);
+    balanceOfUser1BeforeTransaction = balanceOfUser1BeforeTransaction - insuranceAmount;
+    try {
+        await config.flightSuretyData.buy(airline, flightName, timestamp, {from: user1, value: 1, gasPrice: 0});
+        await config.flightSuretyData.creditInsurees(airline, flightName, timestamp);
+        await config.flightSuretyData.pay({from: user1});
+    } 
+    catch(e) {
+        // console.log(e);
+    }
+
+    let balanceOfUser1AfterTransaction = await web3.eth.getBalance(user1);
+    let value = Number(balanceOfUser1AfterTransaction) - Number(balanceOfUser1BeforeTransaction);
+    // console.log(web3.utils.fromWei(value.toString(), 'ether'));
+    let x = web3.utils.fromWei(value.toString(), 'ether');
+    assert(x>0, "Balance should be positive.");
+  });
+
 });

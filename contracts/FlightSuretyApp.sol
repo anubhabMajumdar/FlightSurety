@@ -37,8 +37,9 @@ contract FlightSuretyApp {
     
     struct Flight {
         bool isRegistered;
+        string flightName;
         uint8 statusCode;
-        uint256 updatedTimestamp;        
+        uint256 updatedTimestamp;
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
@@ -145,11 +146,14 @@ contract FlightSuretyApp {
     */  
     function registerFlight
                                 (
+                                    address airline,
+                                    string flight,
+                                    uint256 timestamp 
                                 )
                                 external
-                                pure
     {
-
+        bytes32 key = keccak256(abi.encodePacked(airline, flight, timestamp));
+        flights[key] = Flight(true, flight, STATUS_CODE_UNKNOWN, timestamp, airline);
     }
     
    /**
@@ -164,8 +168,8 @@ contract FlightSuretyApp {
                                     uint8 statusCode
                                 )
                                 internal
-                                pure
     {
+        
     }
 
 
